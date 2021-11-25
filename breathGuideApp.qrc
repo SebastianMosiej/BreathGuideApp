@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/BreathSequenceData.qml</file>
+    </qresource>
+</RCC>
