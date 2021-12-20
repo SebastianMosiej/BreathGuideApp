@@ -16,7 +16,7 @@ namespace {
     };
 }
 
-BreathingGraphItem::BreathingGraphItem(QQuickItem* parent) : QQuickPaintedItem(parent), m_running(true), m_timeLinePos(0), m_widthStep(-1) {
+BreathingGraphItem::BreathingGraphItem(QQuickItem* parent) : QQuickPaintedItem(parent), m_running(true), m_timeLine{0,0,0} , m_widthStep(-1) {
     startTimer(milisecondInterval);
 
     m_sectionPen.setStyle(Qt::SolidLine);
@@ -50,7 +50,7 @@ void BreathingGraphItem::recalculate(bool force) {
 void BreathingGraphItem::start() {
     m_time = QTime::currentTime();
     m_running = true;
-    m_timeLinePos = 0;
+    m_timeLine.x = 0;
     update();
 }
 
@@ -72,7 +72,6 @@ void BreathingGraphItem::update(const QRect &rect) {
 #include <QDebug>
 
 void BreathingGraphItem::paint(QPainter* painter) {
-    const auto bottomMargin = 20.0;
     auto height = boundingRect().height();
 
     painter->setRenderHint(QPainter::Antialiasing);
@@ -83,88 +82,111 @@ void BreathingGraphItem::paint(QPainter* painter) {
 
     painter->setPen(m_sectionPen);
 
-    auto section = xPointToSection(m_timeLinePos);
     auto start = QPointF(leftMargin, height - bottomMargin);
-//    for(const auto i : m_sequencesWidth) {
     for(int i = 0; i < SECTION_MAX; i++) {
-        if (section > i){
-            start = drawTimeSection(painter, start, i);
-        } else if (section == i){
-            start = drawTimeSection(painter, start, i);
-        } else {
-            start = drawTimeSection(painter, start, i);
-        }
-//        start = drawTimeSection(painter, start, INHALE_HOLD_SECTION);
-//        start = drawTimeSection(painter, start, EXHALE_SECTION);
-//        start = drawTimeSection(painter, start, EXHALE_HOLD_SECTION);
+        start = drawTimeSection(painter, start, i);
     }
 
     drawTimeLine(painter);
 }
-/////////////////
 
 QPointF BreathingGraphItem::drawTimeSection(QPainter* painter, QPointF start, int section) {
     auto circle = QRect{0,0, lineWidth(), lineWidth()};
     auto target = QPointF(0, 0);
+    auto halfTarget = QPointF(0, 0);
+    auto penColor = QColor();
     switch (section) {
     case INHALE_SECTION:
         target.ry() = topMargin;
         target.rx() = m_widthStep * inhaleTime();
-        m_sectionPen.setColor(inhaleColor());
+        penColor = inhaleColor();
         break;
     case INHALE_HOLD_SECTION:
         target.ry() = topMargin;
         target.rx() = m_widthStep * inhaleHoldTime();
-        m_sectionPen.setColor(inhaleHoldColor());
+        penColor = inhaleHoldColor();
         break;
     case EXHALE_SECTION:
         target.ry() = boundingRect().height() - bottomMargin;
         target.rx() = m_widthStep * exhaleTime();
-        m_sectionPen.setColor(exhaleColor());
+        penColor = exhaleColor();
         break;
     case EXHALE_HOLD_SECTION:
         target.ry() = boundingRect().height() - bottomMargin;
         target.rx() = m_widthStep * exhaleHoldTime();
-        m_sectionPen.setColor(exhaleHoldColor());
+        penColor = exhaleHoldColor();
         break;
     }
-    target.rx() += start.x();
+
+    if (m_timeLine.section== section) {
+        m_sectionPen.setColor(penColor.lighter());
+        painter->setPen(m_sectionPen);
+        halfTarget.rx() = start.x() + target.x() - m_timeLine.currentSectionPos;
+        double yStep = (start.y() - target.ry()) / target.x();
+        halfTarget.ry() = target.y() + (yStep * m_timeLine.currentSectionPos);
+        painter->drawLine(start, halfTarget);
+    } else if (m_timeLine.section > section) {
+        penColor = penColor.lighter();
+        m_sectionPen.setColor(penColor);
+        halfTarget = start;
+    } else {
+        m_sectionPen.setColor(penColor);
+        halfTarget = start;
+    }
+
     painter->setPen(m_sectionPen);
     circle.moveCenter(start.toPoint());
     painter->drawEllipse(circle);
-    painter->drawLine(start, target);
+
+    m_sectionPen.setColor(penColor);
+    painter->setPen(m_sectionPen);
+    target.rx() += start.x();
+    painter->drawLine(halfTarget, target);
     circle.moveCenter(target.toPoint());
     painter->drawEllipse(circle);
+
+    if (m_timeLine.section == section) {
+        m_sectionPen.setColor(timeLineColor());
+        painter->setPen(m_sectionPen);
+        circle.moveCenter(halfTarget.toPoint());
+        painter->drawEllipse(circle);
+    }
     return target;
 }
 
 void BreathingGraphItem::drawTimeLine(QPainter* painter) {
     const qreal delta = m_time.msecsTo(QTime::currentTime()) / 1000.0;
-    m_timeLinePos = m_timeLinePos+delta*m_widthStep;
-    if (m_timeLinePos >= m_width)
-        m_timeLinePos -= m_width;
+    m_timeLine.x = m_timeLine.x+delta*m_widthStep;
+    if (m_timeLine.x >= m_width)
+        m_timeLine.x -= m_width;
+    xPointToSection(m_timeLine.x);
 
     QPen pen{Qt::SolidLine};
     pen.setWidth(lineWidth());
     pen.setCapStyle(Qt::RoundCap);
 
     pen.setWidth(2);
-    pen.setColor("yellow");
+    pen.setColor(timeLineColor());
     painter->setPen(pen);
-    painter->drawLine(m_timeLinePos+leftMargin,0.0, m_timeLinePos+leftMargin, boundingRect().height());
+    painter->drawLine(m_timeLine.x+leftMargin,0.0, m_timeLine.x+leftMargin, boundingRect().height());
     m_time = QTime::currentTime();
 }
 
-int BreathingGraphItem::xPointToSection(float xPos) {
-    auto pos = leftMargin;
+void BreathingGraphItem::xPointToSection(float xPos) {
+    auto pos = 0;
+    m_timeLine.section = -1;
     if (xPos < pos)
-        return -1;
+        return;
     for (int i = 0; i < 4; i++ ) {
         pos += m_sequencesWidth[i];
-        if (xPos < pos)
-            return i;
+        if (xPos < pos) {
+            m_timeLine.currentSectionPos = pos - m_timeLine.x;
+            m_timeLine.section = i;
+            return;
+        }
     }
-    return 4;
+    assert(false);
+    return;
 }
 
 QX_PROPERTY_IMPL(BreathingGraphItem, inhaleTime, setInhaleTime)
@@ -177,4 +199,5 @@ QX_PROPERTY_IMPL(BreathingGraphItem, inhaleHoldColor, setInhaleHoldColor)
 QX_PROPERTY_IMPL(BreathingGraphItem, exhaleColor, setExhaleColor)
 QX_PROPERTY_IMPL(BreathingGraphItem, exhaleHoldColor, setExhaleHoldColor)
 QX_PROPERTY_IMPL(BreathingGraphItem, backgroundColor, setBackgroundColor)
+QX_PROPERTY_IMPL(BreathingGraphItem, timeLineColor, setTimeLineColor)
 QX_PROPERTY_IMPL(BreathingGraphItem, lineWidth, setLineWidth)

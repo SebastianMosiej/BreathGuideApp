@@ -19,6 +19,7 @@ class BreathingGraphItem : public QQuickPaintedItem {
     QX_PROPERTY_DECL(QColor, inhaleHoldColor, setInhaleHoldColor, "green")
     QX_PROPERTY_DECL(QColor, exhaleColor, setExhaleColor, "steelblue")
     QX_PROPERTY_DECL(QColor, exhaleHoldColor, setExhaleHoldColor, "khaki")
+    QX_PROPERTY_DECL(QColor, timeLineColor, setTimeLineColor, "yellow")
     QX_PROPERTY_DECL(QColor, backgroundColor, setBackgroundColor, "white")
 
     QX_PROPERTY_DECL(int, lineWidth, setLineWidth, 10)
@@ -35,13 +36,21 @@ protected:
     void timerEvent(QTimerEvent *) override;
     QPointF drawTimeSection(QPainter*, QPointF startPoint, int section);
     void drawTimeLine(QPainter*);
-    int xPointToSection(float);
+    void xPointToSection(float);
     void update(const QRect &rect = QRect());
 
 private:
     QTime m_time;
     bool m_running;
-    qreal m_timeLinePos;
+
+
+    struct {
+        int x;
+        int section;
+        int currentSectionPos;
+
+    } m_timeLine;
+
     float m_widthStep;
     QPen m_sectionPen;
     float m_width;
