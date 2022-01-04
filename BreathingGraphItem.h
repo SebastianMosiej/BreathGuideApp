@@ -23,15 +23,25 @@ class BreathingGraphItem : public QQuickPaintedItem {
     QX_PROPERTY_DECL(QColor, backgroundColor, setBackgroundColor, "white")
 
     QX_PROPERTY_DECL(int, lineWidth, setLineWidth, 10)
+
+    Q_PROPERTY(bool running READ running NOTIFY runningChanged)
+
+Q_SIGNALS:
+    void runningChanged(bool);
+
 public:
     BreathingGraphItem(QQuickItem* = nullptr);
     ~BreathingGraphItem();
 
-    void start();
-    void stop();
-    bool isRunning() { return m_running; }
+    Q_INVOKABLE void start();
+    Q_INVOKABLE void stop();
+
+    bool running() const { return m_running; }
     void paint(QPainter*) override;
 
+    static void init() {
+        qmlRegisterType<BreathingGraphItem>("breathAppItems", 1, 0, "BreathingGraphItem");
+    }
 protected:
     void timerEvent(QTimerEvent *) override;
     QPointF drawTimeSection(QPainter*, QPointF startPoint, int section);
@@ -42,7 +52,6 @@ protected:
 private:
     QTime m_time;
     bool m_running;
-
 
     struct {
         int x;

@@ -44,12 +44,14 @@ void BreathingGraphItem::recalculate(bool force) {
 void BreathingGraphItem::start() {
     m_time = QTime::currentTime();
     m_running = true;
+    emit runningChanged(m_running);
     m_timeLine.x = 0;
     update();
 }
 
 void BreathingGraphItem::stop() {
     m_running = false;
+    emit runningChanged(m_running);
     m_time = QTime::currentTime();
     update();
 }

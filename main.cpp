@@ -11,8 +11,7 @@ int main(int argc, char* argv[])
     QGuiApplication app(argc, argv);
     
     QQmlApplicationEngine engine;
-
-    qmlRegisterType<BreathingGraphItem>("breathAppItems", 1, 0, "BreathingGraphItem");
+    BreathingGraphItem::init();
     BreathPhase::init();
 
     engine.addImportPath("qrc:/");
