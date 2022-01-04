@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 import breathAppItems 1.0
 
 ApplicationWindow {
@@ -7,7 +8,18 @@ ApplicationWindow {
     height: 600
     visible: true
 
-    BreathingGraphItem {
+    ColumnLayout {
         anchors.fill: parent
+        BreathingPhaseInfo {
+            phase: breathingGraph.phase
+            Layout.fillWidth: true
+        }
+
+        BreathingGraphItem {
+            id: breathingGraph
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+        }
     }
+
 }

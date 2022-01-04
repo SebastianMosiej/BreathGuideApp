@@ -25,9 +25,11 @@ class BreathingGraphItem : public QQuickPaintedItem {
     QX_PROPERTY_DECL(int, lineWidth, setLineWidth, 10)
 
     Q_PROPERTY(bool running READ running NOTIFY runningChanged)
+    Q_PROPERTY(int phase READ phase NOTIFY phaseChanged)
 
 Q_SIGNALS:
     void runningChanged(bool);
+    void phaseChanged(int);
 
 public:
     BreathingGraphItem(QQuickItem* = nullptr);
@@ -37,6 +39,7 @@ public:
     Q_INVOKABLE void stop();
 
     bool running() const { return m_running; }
+    int phase() const { return m_timeLine.section; }
     void paint(QPainter*) override;
 
     static void init() {
@@ -52,6 +55,7 @@ protected:
 private:
     QTime m_time;
     bool m_running;
+    bool m_phase;
 
     struct {
         int x;

@@ -170,6 +170,7 @@ void BreathingGraphItem::drawTimeLine(QPainter* painter) {
 
 void BreathingGraphItem::xPointToSection(float xPos) {
     auto pos = 0;
+    auto oldSection = m_timeLine.section;
     m_timeLine.section = -1;
     if (xPos < pos)
         return;
@@ -178,6 +179,8 @@ void BreathingGraphItem::xPointToSection(float xPos) {
         if (xPos <= pos) {
             m_timeLine.currentSectionPos = pos - m_timeLine.x;
             m_timeLine.section = i;
+            if (oldSection != i)
+                emit phaseChanged(i);
             return;
         }
     }

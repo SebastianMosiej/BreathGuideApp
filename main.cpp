@@ -19,6 +19,8 @@ int main(int argc, char* argv[])
 
     QSurfaceFormat format;
     format.setSamples(16);
+    format.setDepthBufferSize(16);
+    format.setStencilBufferSize(16);
     auto window  = app.topLevelWindows();
     window.first()->setFormat(format);
 
