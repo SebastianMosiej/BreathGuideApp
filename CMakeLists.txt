@@ -17,6 +17,8 @@ set(SOURCES
     main.cpp
     BreathingGraphItem.cpp
     BreathingGraphItem.h
+    BreathPhaseClass.cpp
+    BreathPhaseClass.h
     utils_qt.h
     breathGuideApp.qrc
 )

@@ -1,5 +1,6 @@
 #include "BreathingGraphItem.h"
 #include <QPainter>
+#include <BreathPhaseClass.h>
 
 namespace {
     constexpr const int milisecondInterval{25};
@@ -7,13 +8,6 @@ namespace {
     constexpr const float bottomMargin{20.0};
     constexpr const float leftMargin{20.0};
     constexpr const float rightMargin{20.0};
-    enum {
-        INHALE_SECTION = 0,
-        INHALE_HOLD_SECTION,
-        EXHALE_SECTION,
-        EXHALE_HOLD_SECTION,
-        SECTION_MAX
-    };
 }
 
 BreathingGraphItem::BreathingGraphItem(QQuickItem* parent) : QQuickPaintedItem(parent), m_running(true), m_timeLine{0,0,0} , m_widthStep(-1) {
@@ -83,7 +77,7 @@ void BreathingGraphItem::paint(QPainter* painter) {
     painter->setPen(m_sectionPen);
 
     auto start = QPointF(leftMargin, height - bottomMargin);
-    for(int i = 0; i < SECTION_MAX; i++) {
+    for(int i = 0; i < BreathPhase::SECTION_MAX; i++) {
         start = drawTimeSection(painter, start, i);
     }
 
@@ -96,22 +90,22 @@ QPointF BreathingGraphItem::drawTimeSection(QPainter* painter, QPointF start, in
     auto halfTarget = QPointF(0, 0);
     auto penColor = QColor();
     switch (section) {
-    case INHALE_SECTION:
+    case BreathPhase::INHALE_SECTION:
         target.ry() = topMargin;
         target.rx() = m_widthStep * inhaleTime();
         penColor = inhaleColor();
         break;
-    case INHALE_HOLD_SECTION:
+    case BreathPhase::INHALE_HOLD_SECTION:
         target.ry() = topMargin;
         target.rx() = m_widthStep * inhaleHoldTime();
         penColor = inhaleHoldColor();
         break;
-    case EXHALE_SECTION:
+    case BreathPhase::EXHALE_SECTION:
         target.ry() = boundingRect().height() - bottomMargin;
         target.rx() = m_widthStep * exhaleTime();
         penColor = exhaleColor();
         break;
-    case EXHALE_HOLD_SECTION:
+    case BreathPhase::EXHALE_HOLD_SECTION:
         target.ry() = boundingRect().height() - bottomMargin;
         target.rx() = m_widthStep * exhaleHoldTime();
         penColor = exhaleHoldColor();
@@ -179,13 +173,13 @@ void BreathingGraphItem::xPointToSection(float xPos) {
         return;
     for (int i = 0; i < 4; i++ ) {
         pos += m_sequencesWidth[i];
-        if (xPos < pos) {
+        if (xPos <= pos) {
             m_timeLine.currentSectionPos = pos - m_timeLine.x;
             m_timeLine.section = i;
             return;
         }
     }
-    assert(false);
+    Q_ASSERT_X(xPos > pos, "xPointToSection", "Timeline positin shouldn't exceed breathGraph");
     return;
 }
 

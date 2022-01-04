@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <iostream>
 #include <BreathingGraphItem.h>
+#include <BreathPhaseClass.h>
 #include <QSurfaceFormat>
 #include <QWindow>
 
@@ -12,13 +13,15 @@ int main(int argc, char* argv[])
     QQmlApplicationEngine engine;
 
     qmlRegisterType<BreathingGraphItem>("breathAppItems", 1, 0, "BreathingGraphItem");
+    BreathPhase::init();
 
     engine.addImportPath("qrc:/");
     engine.load("qrc:/qml/main.qml");
 
     QSurfaceFormat format;
     format.setSamples(16);
-    app.topLevelWindows().first()->setFormat(format);
+    auto window  = app.topLevelWindows();
+    window.first()->setFormat(format);
 
     return app.exec();
 }
