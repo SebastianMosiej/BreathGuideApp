@@ -10,7 +10,7 @@ namespace {
     constexpr const float rightMargin{20.0};
 }
 
-BreathingGraphItem::BreathingGraphItem(QQuickItem* parent) : QQuickPaintedItem(parent), m_running(true), m_timeLine{0,0,0} , m_widthStep(-1) {
+BreathingGraphItem::BreathingGraphItem(QQuickItem* parent) : QQuickPaintedItem(parent), m_running(false), m_timeLine{0,0,0} , m_widthStep(-1) {
     startTimer(milisecondInterval);
 
     m_sectionPen.setStyle(Qt::SolidLine);
@@ -42,10 +42,12 @@ void BreathingGraphItem::recalculate(bool force) {
 }
 
 void BreathingGraphItem::start() {
+    qDebug() << " Starting breathing with " << inhaleTime();
     m_time = QTime::currentTime();
     m_running = true;
     emit runningChanged(m_running);
     m_timeLine.x = 0;
+    m_timeLine.remainingTime = inhaleTime() + 1;
     update();
 }
 
@@ -153,6 +155,10 @@ QPointF BreathingGraphItem::drawTimeSection(QPainter* painter, QPointF start, in
 void BreathingGraphItem::drawTimeLine(QPainter* painter) {
     const qreal delta = m_time.msecsTo(QTime::currentTime()) / 1000.0;
     m_timeLine.x = m_timeLine.x+delta*m_widthStep;
+    int oldTime = m_timeLine.remainingTime;
+    m_timeLine.remainingTime -= delta;
+    if (oldTime != static_cast<int>(m_timeLine.remainingTime))
+        emit remainingTimeChanged(m_timeLine.remainingTime);
     if (m_timeLine.x >= m_width)
         m_timeLine.x -= m_width;
     xPointToSection(m_timeLine.x);
@@ -179,8 +185,11 @@ void BreathingGraphItem::xPointToSection(float xPos) {
         if (xPos <= pos) {
             m_timeLine.currentSectionPos = pos - m_timeLine.x;
             m_timeLine.section = i;
-            if (oldSection != i)
+            if (oldSection != i) {
+                m_timeLine.remainingTime = 1 + m_sequencesWidth[i] / m_widthStep;
+                qDebug() << "Reset remainig time for section " << i << ", base width " << m_sequencesWidth[i] << ", time " <<m_sequencesWidth[i] / m_widthStep;
                 emit phaseChanged(i);
+            }
             return;
         }
     }

@@ -26,10 +26,12 @@ class BreathingGraphItem : public QQuickPaintedItem {
 
     Q_PROPERTY(bool running READ running NOTIFY runningChanged)
     Q_PROPERTY(int phase READ phase NOTIFY phaseChanged)
+    Q_PROPERTY(int remainingTime READ remainingTime  NOTIFY remainingTimeChanged)
 
 Q_SIGNALS:
     void runningChanged(bool);
     void phaseChanged(int);
+    void remainingTimeChanged(int);
 
 public:
     BreathingGraphItem(QQuickItem* = nullptr);
@@ -40,6 +42,7 @@ public:
 
     bool running() const { return m_running; }
     int phase() const { return m_timeLine.section; }
+    int remainingTime() const { return m_timeLine.remainingTime; }
     void paint(QPainter*) override;
 
     static void init() {
@@ -55,14 +58,18 @@ protected:
 private:
     QTime m_time;
     bool m_running;
-    bool m_phase;
 
     struct {
         int x;
         int section;
         int currentSectionPos;
-
+        float remainingTime;
     } m_timeLine;
+
+    struct {
+        float duration;
+        float width;
+    } m_sequenceData[4];
 
     float m_widthStep;
     QPen m_sectionPen;
