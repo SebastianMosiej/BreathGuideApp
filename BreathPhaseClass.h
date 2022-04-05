@@ -15,7 +15,7 @@ namespace BreathPhase
         NONE_SECTION = 10
     };
     Q_ENUM_NS(Phase)  // register the enum in meta object data
-    void init() {
+    inline void init() {
         qmlRegisterUncreatableMetaObject(
             BreathPhase::staticMetaObject,  // meta object created by Q_NAMESPACE macro
             "breathAppItems",               // import statement (can be any string)
