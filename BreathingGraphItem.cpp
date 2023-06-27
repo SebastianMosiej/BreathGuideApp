@@ -38,11 +38,11 @@ void BreathingGraphItem::recalculate(bool force) {
         m_sequencesWidth[1] = inhaleHoldTime() * m_widthStep;
         m_sequencesWidth[2] = exhaleTime() * m_widthStep;
         m_sequencesWidth[3] = exhaleHoldTime() * m_widthStep;
+        m_timeLine.remainingTime = inhaleTime() + 1;
     }
 }
 
 void BreathingGraphItem::start() {
-    qDebug() << " Starting breathing with " << inhaleTime();
     m_time = QTime::currentTime();
     m_running = true;
     emit runningChanged(m_running);
@@ -157,8 +157,10 @@ void BreathingGraphItem::drawTimeLine(QPainter* painter) {
     m_timeLine.x = m_timeLine.x+delta*m_widthStep;
     int oldTime = m_timeLine.remainingTime;
     m_timeLine.remainingTime -= delta;
+    //
     if (oldTime != static_cast<int>(m_timeLine.remainingTime))
         emit remainingTimeChanged(m_timeLine.remainingTime);
+
     if (m_timeLine.x >= m_width)
         m_timeLine.x -= m_width;
     xPointToSection(m_timeLine.x);
@@ -187,8 +189,8 @@ void BreathingGraphItem::xPointToSection(float xPos) {
             m_timeLine.section = i;
             if (oldSection != i) {
                 m_timeLine.remainingTime = 1 + m_sequencesWidth[i] / m_widthStep;
-                qDebug() << "Reset remainig time for section " << i << ", base width " << m_sequencesWidth[i] << ", time " <<m_sequencesWidth[i] / m_widthStep;
                 emit phaseChanged(i);
+                emit remainingTimeChanged(m_timeLine.remainingTime);
             }
             return;
         }
