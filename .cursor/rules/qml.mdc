@@ -1,0 +1,14 @@
+---
+description: 
+globs: *.qml
+alwaysApply: false
+language: qml
+---
+# QML Theme Files Guidelines
+
+## Formatting
+- Use an indent size of 4 spaces.
+- For indent use always space, no tabs
+- Trim trailing whitespaces in line  
+- Use double quotes for strings.
+
