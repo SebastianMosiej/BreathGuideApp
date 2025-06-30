@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 COMPONENTS Quick REQUIRED)
+find_package(Qt6 COMPONENTS Quick REQUIRED)
 
 set(APPNAME breathGuideApp )
 
@@ -33,7 +33,7 @@ PRIVATE
 
 set(QML_IMPORT_PATH ${CMAKE_CURRENT_LIST_DIR}/qml CACHE STRING "" FORCE)
 
-target_link_libraries(${APPNAME} Qt5::Quick )
+target_link_libraries(${APPNAME} Qt6::Quick )
 
 install(TARGETS ${APPNAME}
     COMPONENT ${APPNAME}

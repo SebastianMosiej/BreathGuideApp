@@ -12,6 +12,7 @@ ApplicationWindow {
         anchors.fill: parent
         BreathingPhaseInfo {
             phase: breathingGraph.phase
+            remainingTime: breathingGraph.remainingTime
             Layout.fillWidth: true
         }
 
@@ -21,5 +22,4 @@ ApplicationWindow {
             Layout.fillWidth: true
         }
     }
-
 }

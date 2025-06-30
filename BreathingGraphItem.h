@@ -60,7 +60,7 @@ private:
     bool m_running;
 
     struct {
-        int x;
+        qreal x;
         int section;
         int currentSectionPos;
         float remainingTime;
